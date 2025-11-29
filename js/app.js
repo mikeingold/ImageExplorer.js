@@ -244,7 +244,7 @@ function toggle_dev_tools() {
     const dev_controls = document.getElementById('dev-controls');
     
     if (dev_tools_enabled) {
-        // Enable dev mode - show controls panel and change button color
+        // Enable  mode - show controls panel and change button color
         toggle_button.classList.add('active');
         dev_controls.classList.add('visible');
     } else {
@@ -479,11 +479,11 @@ function discard_action() {
 function animate_json_clipboard_success() {
     // Acknowledge action by changing icon from copy symbol to checkmark
     const img = document.getElementById('img-copy-icon');
-    img.src = "assets/icon_check.svg";
+    img.src = "assets/icons/icon_check.svg";
 
     // Schedule change back to copy symbol after a slight delay
     const delay_ms = 800;
-    setTimeout(() => { img.src = "assets/icon_copy.svg"; }, delay_ms);
+    setTimeout(() => { img.src = "assets/icons/icon_copy.svg"; }, delay_ms);
 }
 
 /**

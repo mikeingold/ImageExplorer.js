@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Image Explorer</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="d3.min.js"></script>
+    <script src="libs/d3.min.js"></script>
 </head>
 <body>
     <header id="banner">
-        <span>mikeingold.github.io</span>
+        <span>ImageExplorer.js</span>
     </header>
 
     <div id="container">
@@ -26,48 +26,48 @@
 
     <!-- Dev mode toggle button - bottom-left corner -->
     <button class="round-btn" id="dev-mode-toggle" title="Developer Tools">
-        <span><img src="assets/icon_dev.svg" /></span>
+        <span><img src="assets/icons/icon_dev.svg" /></span>
     </button>
 
     <!-- Dev mode controls panel - appears when dev mode is active -->
     <div id="dev-controls" class="dev-controls">
         <span class="dev-mode-label">Developer Tools</span>
-        <button id="load-image-btn"><img src="assets/icon_addphoto.svg" /> Load New Image</button>
-        <button id="trace-btn"><img src="assets/icon_trace.svg" /> Trace a Feature</button>
+        <button id="load-image-btn"><img src="assets/icons/icon_addphoto.svg" /> Load New Image</button>
+        <button id="trace-btn"><img src="assets/icons/icon_trace.svg" /> Trace a Feature</button>
     </div>
 
     <!-- Reset button - bottom-right, left of zoom controls -->
     <button class="round-btn" id="reset-btn" title="Reset Workspace">
-        <span><img src="assets/icon_refresh.svg" /></span>
+        <span><img src="assets/icons/icon_refresh.svg" /></span>
     </button>
 
     <!-- Upper/Lower Buttons  -->
     <div class="view-controls">
         <button class="round-btn view-btn active" id="upper-view-btn" title="Upper View">
-            <span><img src="assets/icon_plane.svg" /></span>
+            <span><img src="assets/icons/icon_plane.svg" /></span>
         </button>
         <button class="round-btn view-btn" id="lower-view-btn" title="Lower View">
-            <span><img src="assets/icon_plane.svg" style="transform: rotate(180deg);" /></span>
+            <span><img src="assets/icons/icon_plane.svg" style="transform: rotate(180deg);" /></span>
         </button>
     </div>
 
     <!-- Zoom control buttons in bottom-right -->
     <div class="zoom-controls">
         <button class="round-btn" id="zoom-in-btn" title="Zoom In">
-            <span><img src="assets/icon_zoomin.svg" /></span>
+            <span><img src="assets/icons/icon_zoomin.svg" /></span>
         </button>
         <button class="round-btn" id="zoom-out-btn" title="Zoom Out">
-            <span><img src="assets/icon_zoomout.svg" /></span>
+            <span><img src="assets/icons/icon_zoomout.svg" /></span>
         </button>
     </div>
 
     <!-- Tracing action buttons above dev tools -->
     <div id="tracing-controls">
         <button class="round-btn" id="finish-tracing-btn" title="Finish Tracing">
-            <span><img src="assets/icon_check.svg" /></span>
+            <span><img src="assets/icons/icon_check.svg" /></span>
         </button>
         <button class="round-btn" id="cancel-tracing-btn" title="Cancel Tracing">
-            <span><img src="assets/icon_x.svg" /></span>
+            <span><img src="assets/icons/icon_x.svg" /></span>
         </button>
     </div>
 
@@ -89,7 +89,7 @@
         <h2>
             <span>Feature Info</span>
             <span id="json-copy-icon" title="Copy JSON to Clipboard">
-                <img id="img-copy-icon" src="assets/icon_copy.svg" />
+                <img id="img-copy-icon" src="assets/icons/icon_copy.svg" />
             </span>
         </h2>
         <label>ID</label>
@@ -122,8 +122,8 @@
         </div>
     </div>
 
-    <script src="map.js"></script>
-    <script src="utils.js"></script>
-    <script src="app.js"></script>
+    <script src="js/map.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>
