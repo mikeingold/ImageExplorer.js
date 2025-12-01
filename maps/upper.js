@@ -1,7 +1,7 @@
-const MAP = {
+const LOAD_MAP_UPPER = {
     "name": "Upper",
     "description": "Upper side of PCB.",
-    "image": "maps/upper/upper.png",
+    "image": "maps/upper.png",
     "annotations": [
         {
             "id": "1000",
@@ -28,4 +28,4 @@ const MAP = {
             "coordinates": [[354, 886], [461, 997], [566, 879], [455, 780]]
         },
     ]
-‎}
+}
