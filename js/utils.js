@@ -75,8 +75,22 @@ function get_user_polygon(uuid) {
 }
 
 // ========================================
-//   Types
+//   Data Structures
 // ========================================
+
+class MapAnnotation {
+    constructor(id, name, description, coordinates) {
+        this.uuid = globalThis.crypto.randomUUID()
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.coordinates = coordinates;
+    }
+}
+
+function to_MapAnnotation(obj) {
+    return new MapAnnotation(obj.id, obj.name, obj.description, obj.coordinates);
+}
 
 class MapState {
     constructor(name, image_url, polygons = []) {
@@ -85,4 +99,9 @@ class MapState {
         this.polygons = polygons;
         this.user_polygons = [];
     }
+}
+
+function to_MapState(obj) {
+    const annotations = obj.annotations.map(to_MapAnnotation)
+    return new MapState(obj.name, obj.image, annotations);
 }
