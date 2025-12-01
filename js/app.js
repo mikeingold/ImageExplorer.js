@@ -3,8 +3,8 @@
 // ========================================
 
 // Default Upper and Lower Views
-let MAP_UPPER = new MapState("upper", 'assets/map_upper.png', MAP_POLYGONS.filter(f => f.side == "upper"))
-let MAP_LOWER = new MapState("lower", 'assets/map_lower.png', MAP_POLYGONS.filter(f => f.side == "lower"))
+let MAP_UPPER = new MapState("upper", 'maps/upper.png', MAP_POLYGONS.filter(f => f.side == "upper"))
+let MAP_LOWER = new MapState("lower", 'maps/lower.png', MAP_POLYGONS.filter(f => f.side == "lower"))
 
 // Application state
 let current_map_state = MAP_UPPER;
