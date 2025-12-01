@@ -1,7 +1,7 @@
 const LOAD_MAP_LOWER = {
     "name": "Lower",
     "description": "Lower side of PCB.",
-    "image": "maps/lower.png",
+    "image_url": "maps/lower.png",
     "annotations": [
         {
             "id": "2001",

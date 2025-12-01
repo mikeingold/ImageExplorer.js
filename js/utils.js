@@ -86,22 +86,23 @@ class MapAnnotation {
         this.description = description;
         this.coordinates = coordinates;
     }
-}
 
-function to_MapAnnotation(obj) {
-    return new MapAnnotation(obj.id, obj.name, obj.description, obj.coordinates);
-}
-
-class MapState {
-    constructor(name, image_url, polygons = []) {
-        this.name = name;
-        this.image_url = image_url;
-        this.polygons = polygons;
-        this.user_polygons = [];
+    static from_object(obj) {
+        return new MapAnnotation(obj.id, obj.name, obj.description, obj.coordinates);
     }
 }
 
-function to_MapState(obj) {
-    const annotations = obj.annotations.map(to_MapAnnotation)
-    return new MapState(obj.name, obj.image, annotations);
+class MapState {
+    constructor(name, image_url, annotations = []) {
+        this.uuid = globalThis.crypto.randomUUID(),
+        this.name = name;
+        this.image_url = image_url;
+        this.polygons = annotations;
+        this.user_polygons = [];
+    }
+
+    static from_object(obj) {
+        const annotations = obj.annotations.map(MapAnnotation.from_object)
+        return new MapState(obj.name, obj.image_url, annotations);
+    }
 }

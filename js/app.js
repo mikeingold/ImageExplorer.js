@@ -3,8 +3,8 @@
 // ========================================
 
 // Default Upper and Lower Views
-let MAP_UPPER = to_MapState(LOAD_MAP_UPPER);
-let MAP_LOWER = to_MapState(LOAD_MAP_LOWER);
+let MAP_UPPER = MapState.from_object(LOAD_MAP_UPPER);
+let MAP_LOWER = MapState.from_object(LOAD_MAP_LOWER);
 
 // Application state
 let current_map_state = MAP_UPPER;

@@ -1,7 +1,7 @@
 const LOAD_MAP_UPPER = {
     "name": "Upper",
     "description": "Upper side of PCB.",
-    "image": "maps/upper.png",
+    "image_url": "maps/upper.png",
     "annotations": [
         {
             "id": "1000",
