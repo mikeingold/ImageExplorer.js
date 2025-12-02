@@ -1,7 +1,10 @@
-// Configuration - Two modes with different images and areas
+// ========================================
+//                Maps
+// ========================================
+
 const modes = {
     upper: {
-        image_url: 'assets/map_upper.png',
+        image_url: '../maps/upper.png',
         image_width: 1123,
         image_height: 794,
         areas: [
@@ -62,49 +65,27 @@ const modes = {
             }
         ]
     },
-    lower: {
-        image_url: 'assets/map_lower.png',
-        image_width: 1123,
-        image_height: 794,
-        areas: [
-            {
-                name: 'Ground Connection',
-                description: 'Circuit ground reference point',
-                coordinates: [[400, 580], [650, 580], [650, 720], [400, 720]],
-                z_order: 1,
-                details: {
-                    pin: 'Pin 1 (GND)',
-                    connection: 'Common ground'
-                }
-            },
-            {
-                name: 'Discharge Pin',
-                description: 'Capacitor discharge control',
-                coordinates: [[200, 500], [350, 500], [350, 650], [200, 650]],
-                z_order: 2,
-                details: {
-                    pin: 'Pin 7',
-                    function: 'Discharge path'
-                }
-            }
-        ]
-    }
 };
 
 let current_mode = 'upper';
-const get_current_config = () => modes[current_mode];
+
+function get_current_config() {
+    return modes[current_mode];
+}
 
 // State
-const create_initial_state = () => ({
-    width: 0,
-    height: 0,
-    transform: d3.zoomIdentity,
-    rotation: 0,
-    initial_touches: null,
-    initial_rotation: 0,
-    initial_distance: 0,
-    initial_scale: 1
-});
+function create_initial_state() {
+    return {
+        width: 0,
+        height: 0,
+        transform: d3.zoomIdentity,
+        rotation: 0,
+        initial_touches: null,
+        initial_rotation: 0,
+        initial_distance: 0,
+        initial_scale: 1
+    };
+}
 
 let state = create_initial_state();
 
@@ -122,112 +103,27 @@ svg.attr('width', state.width).attr('height', state.height);
 // Create main group
 const g = svg.append('g');
 
-// Image element (will be updated on mode switch)
-let image_element = null;
-
-// Transform functions
-const get_rotation_center = () => {
-    const config = get_current_config();
-    return {
-        x: config.image_width / 2,
-        y: config.image_height / 2
-    };
-};
-
-const apply_transform = () => {
-    const center = get_rotation_center();
-    g.attr('transform', 
-        `${state.transform} rotate(${state.rotation}, ${center.x}, ${center.y})`
-    );
-};
-
 // Zoom behavior (desktop only)
 const zoom = d3.zoom()
     .scaleExtent([0.5, 10])
-    .filter((event) => {
-        return event.type !== 'touchstart' && 
-                event.type !== 'touchmove' && 
-                event.type !== 'touchend';
-    })
-    .on('zoom', (event) => {
-        state.transform = event.transform;
-        apply_transform();
-    });
+    .filter((event) => {return (event.type !== 'touchstart') && (event.type !== 'touchmove') && (event.type !== 'touchend');})
+    .on('zoom', (event) => {state.transform = event.transform; apply_transform();});
 
 svg.call(zoom);
 
 // Image setup
 g.append('image')
-    .attr('href', modes[current_mode].image_url)
-    .attr('width', modes[current_mode].image_width)
-    .attr('height', modes[current_mode].image_height);
-
-// Tooltip functions
-const show_tooltip = (area, event) => {
-    tooltip.querySelector('.tooltip-title').textContent = area.name;
-    tooltip.querySelector('.tooltip-description').textContent = area.description;
-    tooltip.classList.add('visible');
-    update_tooltip_position(event);
-};
-
-const update_tooltip_position = (event) => {
-    const x = event.clientX + 15;
-    const y = event.clientY + 15;
-    tooltip.style.left = `${x}px`;
-    tooltip.style.top = `${y}px`;
-};
-
-const hide_tooltip = () => {
-    tooltip.classList.remove('visible');
-};
-
-// Info panel functions
-const format_label = (key) => {
-    return key.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1').trim();
-};
-
-const create_info_section = (label, value) => {
-    return `
-        <div class="info-section">
-            <div class="info-label">${format_label(label)}</div>
-            <div class="info-value">${value}</div>
-        </div>
-    `;
-};
-
-const show_info_panel = (area) => {
-    info_panel.querySelector('.info-title').textContent = area.name;
-    
-    let content = create_info_section('description', area.description);
-    
-    if (area.details) {
-        Object.entries(area.details).forEach(([key, value]) => {
-            content += create_info_section(key, value);
-        });
-    }
-    
-    info_panel.querySelector('.info-content').innerHTML = content;
-    info_panel.classList.add('visible');
-};
-
-const close_info_panel = () => {
-    info_panel.classList.remove('visible');
-    d3.selectAll('.area-polygon').classed('selected', false);
-};
+    .attr('href', get_current_config().image_url)
+    .attr('width', get_current_config().image_width)
+    .attr('height', get_current_config().image_height);
 
 // Area rendering - sort by z_order and render in order
-const sorted_areas = [...modes[current_mode].areas].sort((a, b) => {
-    const z_a = a.z_order ?? 0;
-    const z_b = b.z_order ?? 0;
-    return z_a - z_b;
-});
+const sorted_areas = [...get_current_config().areas].sort(sort_by_zorder);
 
 const area_elements = [];
 
-const create_area_polygon = (area, index) => {
-    const points_string = area.coordinates
-        .map(p => p.join(','))
-        .join(' ');
+function create_area_polygon(area, index) {
+    const points_string = area.coordinates.map(p => p.join(',')).join(' ');
 
     const polygon = g.append('g')
         .attr('class', 'areas')
@@ -236,7 +132,7 @@ const create_area_polygon = (area, index) => {
         .attr('points', points_string)
         .attr('data-index', index)
         .attr('data-z-order', area.z_order ?? 0)
-        .on('mouseenter', function(event) {
+        .on('mouseenter', function (event) {
             // Only highlight if this is the topmost polygon at this position
             const topmost = get_topmost_polygon_at_point(event);
             if (topmost === this) {
@@ -244,7 +140,7 @@ const create_area_polygon = (area, index) => {
                 d3.select(this).classed('hovered', true);
             }
         })
-        .on('mousemove', function(event) {
+        .on('mousemove', function (event) {
             const topmost = get_topmost_polygon_at_point(event);
             if (topmost === this) {
                 update_tooltip_position(event);
@@ -253,11 +149,11 @@ const create_area_polygon = (area, index) => {
                 d3.select(this).classed('hovered', false);
             }
         })
-        .on('mouseleave', function() {
+        .on('mouseleave', function () {
             hide_tooltip();
             d3.select(this).classed('hovered', false);
         })
-        .on('click', function(event) {
+        .on('click', function (event) {
             event.stopPropagation();
             const topmost = get_topmost_polygon_at_point(event);
             if (topmost === this) {
@@ -266,9 +162,9 @@ const create_area_polygon = (area, index) => {
                 d3.select(this).classed('selected', true);
             }
         });
-    
+
     return polygon.node();
-};
+}
 
 // Helper function to find topmost polygon at mouse position
 const get_topmost_polygon_at_point = (event) => {
@@ -296,23 +192,25 @@ const get_topmost_polygon_at_point = (event) => {
 };
 
 sorted_areas.forEach((area, index) => {
-    const polygon = create_area_polygon(area, index);
-    area_elements.push(polygon);
+    area_elements.push(create_area_polygon(area, index));
 });
 
+// ========================================
+//          Touchscreen Support
+// ========================================
+
 // Touch gesture handling
-const get_touch_distance = (touches) => {
+function get_touch_distance(touches) {
     const dx = touches[1].clientX - touches[0].clientX;
     const dy = touches[1].clientY - touches[0].clientY;
     return Math.sqrt(dx * dx + dy * dy);
-};
+}
 
-const get_touch_angle = (touches) => {
-    return Math.atan2(
-        touches[1].clientY - touches[0].clientY,
-        touches[1].clientX - touches[0].clientX
-    );
-};
+function get_touch_angle(touches) {
+    const dx = touches[1].clientX - touches[0].clientX;
+    const dy = touches[1].clientY - touches[0].clientY;
+    return Math.atan2(dy, dx);
+}
 
 const handle_touch_start = (event) => {
     if (event.touches.length === 2) {
@@ -383,89 +281,80 @@ svg_node.addEventListener('touchstart', handle_touch_start, { passive: false });
 svg_node.addEventListener('touchmove', handle_touch_move, { passive: false });
 svg_node.addEventListener('touchend', handle_touch_end, { passive: false });
 
-// Control functions
-const zoom_in = () => {
+// ========================================
+//         Map Transformations
+// ========================================
+
+function get_rotation_center() {
+    const config = get_current_config();
+    return {
+        x: get_current_config().image_width / 2,
+        y: get_current_config().image_height / 2
+    };
+}
+
+function apply_transform() {
+    const center = get_rotation_center();
+    g.attr('transform',
+        `${state.transform} rotate(${state.rotation}, ${center.x}, ${center.y})`
+    );
+}
+
+function zoom_in() {
     svg.transition().duration(300).call(zoom.scaleBy, 1.5);
-};
+}
 
-const zoom_out = () => {
+function zoom_out() {
     svg.transition().duration(300).call(zoom.scaleBy, 0.67);
-};
+}
 
-const snap_to_45_degree_increment = (current_rotation, direction) => {
-    const normalized = ((current_rotation % 360) + 360) % 360;
-    const current_increment = normalized / 45;
-    
-    let next_increment;
-    if (direction === 'left') {
-        next_increment = Math.floor(current_increment);
-        if (next_increment === current_increment) {
-            next_increment -= 1;
-        }
-    } else {
-        next_increment = Math.ceil(current_increment);
-        if (next_increment === current_increment) {
-            next_increment += 1;
-        }
-    }
-    
-    return next_increment * 45;
-};
-
-const rotate_left = () => {
+function rotate_left() {
     state.rotation = snap_to_45_degree_increment(state.rotation, 'left');
     g.transition().duration(300).tween('rotate', () => {
         return () => apply_transform();
     });
-};
+}
 
-const rotate_right = () => {
-    state.rotation = snap_to_45_degree_increment(state.rotation, 'right');
-    g.transition().duration(300).tween('rotate', () => {
-        return () => apply_transform();
-    });
-};
+function rotate_right() {
+    const start = state.rotation;
+    const end = snap_to_45_degree_increment(start, 'right');
+    state.rotation = end;
 
-const reset_view = () => {
+    g.transition()
+        .duration(300)
+        .attrTween("transform", () => {
+            const interp = d3.interpolateNumber(start, end);
+            return t => `rotate(${interp(t)})`;
+        });
+}
+
+function reset_view() {
     state.rotation = 0;
     svg.transition().duration(500).call(zoom.transform, d3.zoomIdentity);
-};
+}
 
-const fit_image_to_view = () => {
-    const scale = Math.min(
-        state.width / modes[current_mode].image_width, 
-        state.height / modes[current_mode].image_height
-    ) * 0.9;
-    
-    const x = (state.width - modes[current_mode].image_width * scale) / 2;
-    const y = (state.height - modes[current_mode].image_height * scale) / 2;
-    
+function fit_image_to_view() {
+    const scale_x = state.width / get_current_config().image_width;
+    const scale_y = state.height / get_current_config().image_height;
+    const scale = 0.9 * Math.min(scale_x, scale_y);
+
+    const x = (state.width - scale * get_current_config().image_width) / 2;
+    const y = (state.height - scale * get_current_config().image_height) / 2;
+
     const initial_transform = d3.zoomIdentity.translate(x, y).scale(scale);
     svg.call(zoom.transform, initial_transform);
-};
+}
 
-// Event listeners
-document.getElementById('zoom-in-btn').addEventListener('click', zoom_in);
-document.getElementById('zoom-out-btn').addEventListener('click', zoom_out);
-document.getElementById('rotate-left-btn').addEventListener('click', rotate_left);
-document.getElementById('rotate-right-btn').addEventListener('click', rotate_right);
-document.getElementById('reset-btn').addEventListener('click', reset_view);
-document.getElementById('info-close-btn').addEventListener('click', close_info_panel);
-
-svg.on('click', close_info_panel);
-
-window.addEventListener('resize', () => {
-    state.width = container.clientWidth;
-    state.height = container.clientHeight;
-    svg.attr('width', state.width).attr('height', state.height);
-});
+// ========================================
+//
+// ========================================
 
 // Keyboard shortcuts
 const handle_keydown = (event) => {
-    if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
-        return;
-    }
+    // Ignore typing into input fields
+    if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') { return; }
     
+    // LUT for defined actions
     const key_actions = {
         'q': rotate_left,
         'e': rotate_right,
@@ -476,13 +365,23 @@ const handle_keydown = (event) => {
         '_': zoom_out
     };
     
+    // If event.key is in key_actions LUT, perform the action
     const action = key_actions[event.key.toLowerCase()];
-    if (action) {
-        action();
-    }
+    if (action) { action(); }
 };
 
+// Event listeners
+document.getElementById('zoom-in-btn').addEventListener('click', zoom_in);
+document.getElementById('zoom-out-btn').addEventListener('click', zoom_out);
+document.getElementById('rotate-left-btn').addEventListener('click', rotate_left);
+document.getElementById('rotate-right-btn').addEventListener('click', rotate_right);
+document.getElementById('reset-btn').addEventListener('click', reset_view);
 document.addEventListener('keydown', handle_keydown);
+window.addEventListener('resize', () => {
+    state.width = container.clientWidth;
+    state.height = container.clientHeight;
+    svg.attr('width', state.width).attr('height', state.height);
+});
 
 // Initialize view
 fit_image_to_view();
