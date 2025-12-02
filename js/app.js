@@ -390,8 +390,9 @@ function exit_tracing() {
 // ========================================
 
 function open_polygon_info_panel(polygon) {
-    // Make panel visible
+    // Make only the correct panel visible
     document.getElementById('polygon-std-info-panel').classList.add('visible');
+    close_user_polygon_info_panel()
 
     // Set text fields
     document.getElementById('polygon-id').value = polygon.id;
@@ -414,7 +415,8 @@ function close_polygon_info_panel() {
 // ========================================
 
 function open_user_polygon_info_panel(polygon) {
-    // Make panel visible
+    // Make only the correct panel visible
+    close_polygon_info_panel()
     document.getElementById('polygon-user-info-panel').classList.add('visible');
 
     // Set text fields
