@@ -14,30 +14,29 @@ function coordinate_string(coords) {
 }
 
 /**
- * Convert a polygon object to a compact JSON string.
+ * Convert a annotation object to a compact JSON string.
  *
- * @param {Object} polygon - Polygon data with properties:
+ * @param {Object} annotation - Annotation data with properties:
  *   `id`, `side`, `name`, `description`, and `coordinates`.
  * @returns {string} A pretty‑printed JSON string where the `coordinates`
  *   field is rendered as a single‑line array.
  */
-function polygon_json_string(polygon) {
-    // Generate a simplified version of the polygon with only the desired fields
+function json_string(annotation) {
+    // Generate a simplified version of the annotation with only the desired fields
     // using a placeholder for coordinates to prevent nested indentation.
-    const simplified_polygon = {
-        "id": polygon.id,
-        "side": polygon.side,
-        "name": polygon.name,
-        "description": polygon.description,
+    const simplified_annotation = {
+        "id": annotation.id,
+        "name": annotation.name,
+        "description": annotation.description,
         "coordinates": "COORDINATES"
     }
 
     // Convert to JSON string with 4-space indents
-    const json_string = JSON.stringify(simplified_polygon, null, 4)
+    const s = JSON.stringify(simplified_annotation, null, 4)
 
     // Replace the COORDINATES placeholder with a one-liner JSON string
-    const coordinate_string = JSON.stringify(polygon.coordinates).replace(/,/g, ', ')
-    return json_string.replace(/"COORDINATES"/, coordinate_string)
+    const coordinate_string = JSON.stringify(annotation.coordinates).replace(/,/g, ', ')
+    return s.replace(/"COORDINATES"/, coordinate_string)
 }
 
 /**
@@ -85,8 +84,8 @@ class MapState {
         this.uuid = globalThis.crypto.randomUUID();
         this.name = name;
         this.image_url = image_url;
-        this.polygons = annotations;
-        this.user_polygons = [];
+        this.annotations = annotations;
+        this.user_annotations = [];
     }
 
     static from_object(obj) {

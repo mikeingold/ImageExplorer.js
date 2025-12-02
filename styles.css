@@ -33,7 +33,7 @@ body {
     cursor: grabbing; /* show grabbing hand cursor to indicate actively panning */
 }
 #container.tracing {
-    cursor: crosshair !important; /* show crosshairs cursor when tracing polygons */
+    cursor: crosshair !important; /* show crosshairs cursor when tracing annotations */
 }
 
 /* Ensure SVG fills container without gaps */
@@ -53,38 +53,38 @@ svg {
 }
 
 /* ============================================
-                Mapped Polygons
+                Mapped Annotations
     ============================================ */
 
-/* Polygon overlays */
-.polygon-area {
+/* Annotation overlays */
+.annotation-area {
     fill: rgba(66, 153, 225, 0.3);
     stroke: #4299e1;
     stroke-width: 2;
     transition: all 0.2s;
     cursor: pointer;
 }
-.polygon-area:hover {
+.annotation-area:hover {
     fill: rgba(66, 153, 225, 0.5);
     stroke: #63b3ed;
     stroke-width: 3;
 }
-.polygon-area.tracing {
+.annotation-area.tracing {
     cursor: crosshair !important;
 }
 
-/* Completed user-generated polygon overlays */
-.polygon-area.user-generated {
+/* Completed user-generated annotation overlays */
+.annotation-area.user-generated {
     fill: rgba(72, 187, 120, 0.3);
     stroke: #48bb78;
 }
-.polygon-area.user-generated:hover {
+.annotation-area.user-generated:hover {
     fill: rgba(72, 187, 120, 0.5);
     stroke: #68d391;
 }
 
-/* In-progress user-generated polygon overlays */
-.drawing-polygon {
+/* In-progress user-generated annotation overlays */
+.drawing-annotation {
     fill: rgba(237, 137, 54, 0.3);
     stroke: #ed8936;
     stroke-width: 2;
@@ -100,7 +100,7 @@ svg {
                   Hover Tooltips
     ============================================ */
 
-/* Tooltip for displaying polygon metadata on hover */
+/* Tooltip for displaying annotation metadata on hover */
 .tooltip {
     position: absolute;
     background: rgba(26, 32, 44, 0.95);
@@ -309,11 +309,11 @@ svg {
 }
 
 /* ============================================
-                Polygon Info Panels
+                Annotation Info Panels
     ============================================ */
 
-/* Polygon data  */
-.polygon-info-panel {
+/* Annotation data  */
+.annotation-info-panel {
     /* position and size */
     position: absolute;
     top: calc(2 * var(--ui-edge-pad));
@@ -328,11 +328,11 @@ svg {
     border: 1px solid #4299e1;
     padding: var(--ui-edge-pad); /* internal padding */
 }
-.polygon-info-panel.visible {
+.annotation-info-panel.visible {
     display: block;
 }
 
-.polygon-info-panel h2 {
+.annotation-info-panel h2 {
     margin: 0 0 20px 0;
     color: #4299e1;
     display: flex;
@@ -340,7 +340,7 @@ svg {
     justify-content: space-between;
 }
 
-.polygon-info-panel h2 #json-copy-icon {
+.annotation-info-panel h2 #json-copy-icon {
     cursor: pointer;
     font-size: 20px;
     padding: 8px;
@@ -348,25 +348,25 @@ svg {
     transition: background 0.2s;
     user-select: none;
 }
-.polygon-info-panel h2 #json-copy-icon:hover {
+.annotation-info-panel h2 #json-copy-icon:hover {
     background: rgba(66, 153, 225, 0.2);
 }
-.polygon-info-panel h2 #json-copy-icon:active {
+.annotation-info-panel h2 #json-copy-icon:active {
     background: rgba(66, 153, 225, 0.4);
 }
-.polygon-info-panel h2 #json-copy-icon img {
+.annotation-info-panel h2 #json-copy-icon img {
     width: 1em;
     height: 1em;
 }
 
-.polygon-info-panel label {
+.annotation-info-panel label {
     display: block;
     margin: 12px 0 4px 0;
     font-size: 14px;
     color: #a0aec0;
 }
-.polygon-info-panel input,
-.polygon-info-panel textarea {
+.annotation-info-panel input,
+.annotation-info-panel textarea {
     width: 100%;
     padding: 10px;
     background: #1a202c;
@@ -378,14 +378,14 @@ svg {
     text-wrap: stable;
 }
 /* Monospace font for JSON output */
-.polygon-info-panel textarea.mono {
+.annotation-info-panel textarea.mono {
     font-family: 'Courier New', monospace;
     overflow: auto;
     white-space: nowrap;
 }
 /* Resizeable and taller */
-.polygon-info-panel input.long,
-.polygon-info-panel textarea.long {
+.annotation-info-panel input.long,
+.annotation-info-panel textarea.long {
     min-height: 10em;
     resize: both;
 }

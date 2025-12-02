@@ -9,11 +9,11 @@ let MAP_LOWER = MapState.from_object(LOAD_MAP_LOWER);
 // Application state
 let current_map_state = MAP_UPPER;
 let dev_tools_enabled = false; // Whether developer mode is active
-let tracing = false;                // whether user is currently tracing a polygon
+let tracing = false;                // whether user is currently tracing a annotation
 
-// User-generated polygons
-let current_tracing_points = [];    // array of [x, y] coordinates for polygon being traced
-let target_polygon = null;          // the currently-selected user-generated polygon
+// User-generated annotations
+let current_tracing_points = [];    // array of [x, y] coordinates for annotation being traced
+let target_annotation = null;          // the currently-selected user-generated annotation
 
 // D3 references - will be initialized after DOM loads
 let container, svg, g, zoom, tooltip, info;
@@ -37,7 +37,7 @@ function hide_splash_modal() {
  * Calculates appropriate zoom level to fit image in viewport
  */
 function load_image(map_state) {
-    // Clear any existing content (image and polygons)
+    // Clear any existing content (image and annotations)
     g.selectAll('*').remove();
 
     // Use native Image object to get dimensions before rendering
@@ -66,9 +66,9 @@ function load_image(map_state) {
             .translate(offsetX, offsetY)
             .scale(scale)
         );
-        // Render polygon overlays on top of image after a short delay
-        // This ensures the transform is applied before rendering polygons
-        setTimeout(() => { render_polygons() }, 10);
+        // Render annotation overlays on top of image after a short delay
+        // This ensures the transform is applied before rendering annotations
+        setTimeout(() => { render_annotations() }, 10);
     };
     img.onerror = function() {
         console.error('Failed to load image:', map_state.image_url);
@@ -77,13 +77,13 @@ function load_image(map_state) {
 }
 
 /**
- * Renders all polygon features on the map
- * Includes both sample features and user-generated polygons
+ * Renders all annotation features on the map
+ * Includes both sample features and user-generated annotations
  * Attaches hover events for tooltip display
  */
-function render_polygons() {
-    // Remove any existing polygons to avoid duplicates
-    g.selectAll('.polygon-area').remove();
+function render_annotations() {
+    // Remove any existing annotations to avoid duplicates
+    g.selectAll('.annotation-area').remove();
 
     // Event handlers to be assigned later in this function
     const g_mouseenter = (event, d) => {
@@ -101,31 +101,31 @@ function render_polygons() {
             .style('top', position_y);
     };
     const g_mouseleave = () => {
-        // Hide tooltip when mouse leaves polygon
+        // Hide tooltip when mouse leaves annotation
         tooltip.classed('visible', false);
     }
     const g_click = (event, d) => {
         event.stopPropagation(); // stop event from propagating to map features behind this one
         if (tracing) return; // no tooltips while tracing
         if (d.is_user_generated) {
-            open_user_polygon_info_panel(get_annotation(current_map_state.user_polygons, d.uuid))
+            open_user_annotation_info_panel(get_annotation(current_map_state.user_annotations, d.uuid))
         } else {
-            open_polygon_info_panel(get_annotation(current_map_state.polygons, d.uuid))
+            open_annotation_info_panel(get_annotation(current_map_state.annotations, d.uuid))
         }
     }
 
-    // Mark user-generated polygons with a flag for styling
+    // Mark user-generated annotations with a flag for styling
     const allFeatures = [
-        ...current_map_state.polygons,
-        ...current_map_state.user_polygons
+        ...current_map_state.annotations,
+        ...current_map_state.user_annotations
     ];
 
-    // Draw SVG polygons from annotations data using D3 data binding
-    g.selectAll('.polygon-area')
+    // Draw SVG annotations from annotations data using D3 data binding
+    g.selectAll('.annotation-area')
         .data(allFeatures)
         .enter()
         .append('polygon')
-        .attr('class', d => d.is_user_generated ? 'polygon-area user-generated' : 'polygon-area') // css class
+        .attr('class', d => d.is_user_generated ? 'annotation-area user-generated' : 'annotation-area') // css class
         .attr('points', d => coordinate_string(d.coordinates))
         .on('mouseenter', g_mouseenter)
         .on('mousemove', g_mousemove)
@@ -170,11 +170,11 @@ function close_reset_confirmation_modal() {
 
 /**
  * Resets zoom/pan to original fitted view
- * If user-generated polygons exist, shows confirmation modal first
+ * If user-generated annotations exist, shows confirmation modal first
  */
 function request_reset_view() {
-    if (current_map_state.user_polygons.length == 0) {
-        // No user polygons, skip ahead to reset
+    if (current_map_state.user_annotations.length == 0) {
+        // No user annotations, skip ahead to reset
         perform_reset_view();
     } else {
         // Trigger pop-up requiring confirmation to proceed
@@ -184,17 +184,17 @@ function request_reset_view() {
 }
 
 /**
- * Performs the actual reset operation: clears user polygons and reloads the image
+ * Performs the actual reset operation: clears user annotations and reloads the image
  */
 function perform_reset_view() {
-    current_map_state.user_polygons = [];
+    current_map_state.user_annotations = [];
     close_reset_confirmation_modal();
     load_image(current_map_state);
 }
 
 function handle_click_normal() {
-    close_polygon_info_panel();
-    close_user_polygon_info_panel();
+    close_annotation_info_panel();
+    close_user_annotation_info_panel();
 }
 
 // ========================================
@@ -206,9 +206,9 @@ function switch_to_lower_view() {
     document.getElementById('upper-view-btn').classList.remove('active');
     document.getElementById('lower-view-btn').classList.add('active');
 
-    // Close polygon info panels if needed
-    close_polygon_info_panel();
-    close_user_polygon_info_panel();
+    // Close annotation info panels if needed
+    close_annotation_info_panel();
+    close_user_annotation_info_panel();
 
     current_map_state = MAP_LOWER;
     load_image(current_map_state);
@@ -219,9 +219,9 @@ function switch_to_upper_view() {
     document.getElementById('upper-view-btn').classList.add('active');
     document.getElementById('lower-view-btn').classList.remove('active');
 
-    // Close polygon info panels if needed
-    close_polygon_info_panel();
-    close_user_polygon_info_panel();
+    // Close annotation info panels if needed
+    close_annotation_info_panel();
+    close_user_annotation_info_panel();
     
     current_map_state = MAP_UPPER;
     load_image(current_map_state);
@@ -253,32 +253,32 @@ function toggle_dev_tools() {
 }
 
 // ========================================
-//   POLYGON TRACING
+//   ANNOTATION TRACING
 // ========================================
 
 /**
  * Handles keyboard shortcuts during tracing mode
- * Enter: Complete polygon and open metadata modal
- * Escape: Cancel tracing and discard current polygon
+ * Enter: Complete annotation and open metadata modal
+ * Escape: Cancel tracing and discard current annotation
  * @param {KeyboardEvent} event - The keyboard event
  */
 function handle_keypress_while_tracing(event) {
     if (event.key === 'Enter' && tracing) {
-        complete_polygon();
+        complete_annotation();
     } else if (event.key === 'Escape' && tracing) {
         exit_tracing();
     }
 }
 
 /**
- * Handles clicks during tracing to add polygon vertices
+ * Handles clicks during tracing to add annotation vertices
  * Updates visual feedback by drawing points and connecting lines
  * @param {MouseEvent} event - The click event
  */
 function handle_click_while_tracing(event) {
     if (!tracing) return;
     
-    // Get click coordinates (in the mapped space), save them to traced polygon
+    // Get click coordinates (in the mapped space), save them to traced annotation
     const [x, y] = d3.pointer(event, g.node());
     current_tracing_points.push([Math.round(x), Math.round(y)]); // avoid sub-pixel issues
     
@@ -289,18 +289,18 @@ function handle_click_while_tracing(event) {
         .attr('cy', y)
         .attr('r', 5);
     
-    // After 2+ points, show the polygon shape preview
+    // After 2+ points, show the annotation shape preview
     if (current_tracing_points.length > 1) {
-        // Remove old polygon preview and redraw with new point
-        g.selectAll('.drawing-polygon').remove();
+        // Remove old annotation preview and redraw with new point
+        g.selectAll('.drawing-annotation').remove();
         g.append('polygon')
-            .attr('class', 'drawing-polygon')
+            .attr('class', 'drawing-annotation')
             .attr('points', coordinate_string(current_tracing_points));
     }
 }
 
 /**
- * Begins polygon tracing mode
+ * Begins annotation tracing mode
  * Changes cursor to crosshair and enables click handler for vertex placement
  */
 function begin_tracing() {
@@ -308,19 +308,19 @@ function begin_tracing() {
     current_tracing_points = [];
 
     // Close any open info panels
-    close_polygon_info_panel();
-    close_user_polygon_info_panel();
+    close_annotation_info_panel();
+    close_user_annotation_info_panel();
     
     // Change cursor to crosshairs
     document.getElementById('container').classList.add('tracing');
-    document.querySelectorAll('.polygon-area').forEach(p => p.classList.add("tracing"))
+    document.querySelectorAll('.annotation-area').forEach(p => p.classList.add("tracing"))
     // Temporarily disable/gray the "Trace a Feature" button
     document.getElementById('trace-btn').disabled = true;
     // Make the tracing action buttons visible
     document.getElementById('tracing-controls').classList.add("active")
     
     // Clear any previous drawing artifacts from abandoned tracings
-    g.selectAll('.drawing-polygon, .drawing-point').remove();
+    g.selectAll('.drawing-annotation, .drawing-point').remove();
     
     // Enable click handling for placing vertices
     svg.on('click', handle_click_while_tracing);
@@ -331,10 +331,9 @@ function begin_tracing() {
 }
 
 /**
- * Completes the current polygon and shows polygon info panel
- * Validates that polygon has at least 3 points
+ * Completes the current annotation and shows annotation info panel
  */
-function complete_polygon() {
+function complete_annotation() {
     // Polygons need at least 3 vertices to be valid
     if (current_tracing_points.length < 3) {
         alert('Please trace at least 3 points to create a polygon');
@@ -350,14 +349,14 @@ function complete_polygon() {
     const is_user_generated = true;
     const new_annotation = new MapAnnotation(id, name, description, coordinates, zorder, is_user_generated)
     
-    // Add it to the current user_polygon array and 
-    current_map_state.user_polygons.push(new_annotation);
-    target_polygon = new_annotation;
+    // Add it to the current user_annotation array and target it
+    current_map_state.user_annotations.push(new_annotation);
+    target_annotation = new_annotation;
 
-    // Update UI: exit tracing, open polygon info panel, re-render all polygons
+    // Update UI: exit tracing, open annotation info panel, re-render all annotations
     exit_tracing()
-    open_user_polygon_info_panel(new_annotation);
-    render_polygons()
+    open_user_annotation_info_panel(new_annotation);
+    render_annotations()
 }
 
 /**
@@ -373,10 +372,10 @@ function exit_tracing() {
     
     // Restore normal grab cursor
     document.getElementById('container').classList.remove('tracing');
-    document.querySelectorAll('.polygon-area').forEach(p => p.classList.remove("tracing"))
+    document.querySelectorAll('.annotation-area').forEach(p => p.classList.remove("tracing"))
     
-    // Remove any drawing artifacts (points and polygon preview)
-    g.selectAll('.drawing-polygon, .drawing-point').remove();
+    // Remove any drawing artifacts (points and annotation preview)
+    g.selectAll('.drawing-annotation, .drawing-point').remove();
     
     // Reset button visibility to initial dev mode state
     document.getElementById('trace-btn').disabled = false;
@@ -384,93 +383,93 @@ function exit_tracing() {
 }
 
 // ========================================
-//   POLYGON INFO PANEL (STANDARD)
+//   ANNOTATION INFO PANEL (STANDARD)
 // ========================================
 
-function open_polygon_info_panel(polygon) {
+function open_annotation_info_panel(annotation) {
     // Make only the correct panel visible
-    document.getElementById('polygon-std-info-panel').classList.add('visible');
-    close_user_polygon_info_panel()
+    document.getElementById('annotation-std-info-panel').classList.add('visible');
+    close_user_annotation_info_panel()
 
     // Set text fields
-    document.getElementById('polygon-id').value = polygon.id;
-    document.getElementById('polygon-name').value = polygon.name;
-    document.getElementById('polygon-description').value = polygon.description;
+    document.getElementById('annotation-id').value = annotation.id;
+    document.getElementById('annotation-name').value = annotation.name;
+    document.getElementById('annotation-description').value = annotation.description;
 }
 
-function close_polygon_info_panel() {
+function close_annotation_info_panel() {
     // Make panel invisible
-    document.getElementById('polygon-std-info-panel').classList.remove('visible');
+    document.getElementById('annotation-std-info-panel').classList.remove('visible');
 
     // Blank the text fields
-    document.getElementById('polygon-id').value = '';
-    document.getElementById('polygon-name').value = '';
-    document.getElementById('polygon-description').value = '';
+    document.getElementById('annotation-id').value = '';
+    document.getElementById('annotation-name').value = '';
+    document.getElementById('annotation-description').value = '';
 }
 
 // ========================================
-//   POLYGON INFO PANEL (USER-GENERATED)
+//   ANNOTATION INFO PANEL (USER-GENERATED)
 // ========================================
 
-function open_user_polygon_info_panel(polygon) {
+function open_user_annotation_info_panel(annotation) {
     // Make only the correct panel visible
-    close_polygon_info_panel()
-    document.getElementById('polygon-user-info-panel').classList.add('visible');
+    close_annotation_info_panel()
+    document.getElementById('annotation-user-info-panel').classList.add('visible');
 
     // Set text fields
-    document.getElementById('user-polygon-id').value = polygon.id;
-    document.getElementById('user-polygon-name').value = polygon.name;
-    document.getElementById('user-polygon-description').value = polygon.description;
+    document.getElementById('user-annotation-id').value = annotation.id;
+    document.getElementById('user-annotation-name').value = annotation.name;
+    document.getElementById('user-annotation-description').value = annotation.description;
 
     // Initialize JSON textbox contents
-    update_user_polygon_info()
+    update_user_annotation_info()
 }
 
-function close_user_polygon_info_panel() {
+function close_user_annotation_info_panel() {
     // Make panel invisible
-    document.getElementById('polygon-user-info-panel').classList.remove('visible');
+    document.getElementById('annotation-user-info-panel').classList.remove('visible');
 
     // Blank the text fields
-    document.getElementById('user-polygon-id').value = '';
-    document.getElementById('user-polygon-name').value = '';
-    document.getElementById('user-polygon-description').value = '';
-    document.getElementById('user-polygon-json').value = '';
+    document.getElementById('user-annotation-id').value = '';
+    document.getElementById('user-annotation-name').value = '';
+    document.getElementById('user-annotation-description').value = '';
+    document.getElementById('user-annotation-json').value = '';
 }
 
 /**
- * Uses User Polygon Info Panel information to update target_polygon and JSON textarea
+ * Uses User Annotation Info Panel information to update target_annotation and JSON textarea
  */
-function update_user_polygon_info() {
-    // Update targeted polygon
-    target_polygon.id = textbox_value_or_placeholder(document.getElementById('user-polygon-id'));
-    target_polygon.name = textbox_value_or_placeholder(document.getElementById('user-polygon-name'));
-    target_polygon.description = textbox_value_or_placeholder(document.getElementById('user-polygon-description'));
+function update_user_annotation_info() {
+    // Update targeted annotation
+    target_annotation.id = textbox_value_or_placeholder(document.getElementById('user-annotation-id'));
+    target_annotation.name = textbox_value_or_placeholder(document.getElementById('user-annotation-name'));
+    target_annotation.description = textbox_value_or_placeholder(document.getElementById('user-annotation-description'));
 
     // Convert data to JSON string and write it into the textbox
-    document.getElementById('user-polygon-json').value = polygon_json_string(target_polygon);
+    document.getElementById('user-annotation-json').value = json_string(target_annotation);
 }
 
 /**
- * Remove one polygon from the current map state.
+ * Remove one annotation from the current map state.
  *
- * @param {Object} polygon - The polygon object to remove.
+ * @param {Object} annotation - The annotation object to remove.
  */
-function discard_user_polygon(polygon) {
-    // Find index of this polygon in the currently-pointed-to user_polygons array
-    const idx = current_map_state.user_polygons.findIndex(p => (p.uuid === polygon.uuid));
+function discard_user_annotation(annotation) {
+    // Find index of this annotation in the currently-pointed-to user_annotations array
+    const idx = current_map_state.user_annotations.findIndex(p => (p.uuid === annotation.uuid));
     if (idx == -1) {
         // Not found - generate warning
-        console.warn('Polygon not found in user_polygons');
+        console.warn(`Annotation with UUID ${annotation.uuid} not found in user_annotations`);
     } else {
         // Found - remove it
-        current_map_state.user_polygons.splice(idx, 1);
+        current_map_state.user_annotations.splice(idx, 1);
     }
 }
 
 function discard_action() {
-    discard_user_polygon(target_polygon)
-    close_user_polygon_info_panel()
-    render_polygons()
+    discard_user_annotation(target_annotation)
+    close_user_annotation_info_panel()
+    render_annotations()
 }
 
 /**
@@ -487,12 +486,12 @@ function animate_json_clipboard_success() {
 }
 
 /**
- * Copies polygon JSON output to the user's clipboard. Shows animated visual when
+ * Copies annotation JSON output to the user's clipboard. Shows animated visual when
  * successful, or prints a console error on failure.
  */
 async function copy_json_to_clipboard() {
     // Select all text in the "JSON Output" textbox and copy to clipboard
-    const json_textbox = document.getElementById('user-polygon-json');
+    const json_textbox = document.getElementById('user-annotation-json');
     
     // Use Clipboard API to attempt copy-to-clipboard
     try {
@@ -509,7 +508,7 @@ async function copy_json_to_clipboard() {
 
 /**
  * Handles custom image upload from file input
- * Clears all polygons (features and user-generated) since coordinates are image-specific
+ * Clears all annotations (features and user-generated) since coordinates are image-specific
  */
 function handle_user_image_upload(e) {
     const file = e.target.files[0];
@@ -566,7 +565,7 @@ function initialize() {
     // Close Info Panel when bare map is clicked
     svg.on('click', handle_click_normal);
 
-    // Reference to tooltip element for showing polygon metadata
+    // Reference to tooltip element for showing annotation metadata
     tooltip = d3.select('#tooltip');
 
     // Attach event listeners to interactive elements
@@ -580,14 +579,14 @@ function initialize() {
     //   Developer Tools
     document.getElementById('load-image-btn').addEventListener('click', trigger_image_upload);
     document.getElementById('trace-btn').addEventListener('click', begin_tracing);
-    document.getElementById('finish-tracing-btn').addEventListener('click', complete_polygon);
+    document.getElementById('finish-tracing-btn').addEventListener('click', complete_annotation);
     document.getElementById('cancel-tracing-btn').addEventListener('click', exit_tracing);
-    //   Panel: Polygon Info (User-Generated)
+    //   Panel: Annotation Info (User-Generated)
     document.getElementById('json-copy-icon').addEventListener('click', copy_json_to_clipboard);
-    document.getElementById('user-polygon-id').addEventListener('input', update_user_polygon_info);
-    document.getElementById('user-polygon-name').addEventListener('input', update_user_polygon_info);
-    document.getElementById('user-polygon-description').addEventListener('input', update_user_polygon_info);
-    document.getElementById('discard-polygon-btn').addEventListener('click', discard_action);
+    document.getElementById('user-annotation-id').addEventListener('input', update_user_annotation_info);
+    document.getElementById('user-annotation-name').addEventListener('input', update_user_annotation_info);
+    document.getElementById('user-annotation-description').addEventListener('input', update_user_annotation_info);
+    document.getElementById('discard-annotation-btn').addEventListener('click', discard_action);
     //   Modal: Splash
     document.getElementById('app-splash-modal').addEventListener('click', hide_splash_modal);
     
