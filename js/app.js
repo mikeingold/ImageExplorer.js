@@ -104,13 +104,14 @@ function render_annotations() {
         // Hide tooltip when mouse leaves annotation
         tooltip.classed('visible', false);
     }
-    const g_click = (event, d) => {
+    const g_click = (event, annotation) => {
         event.stopPropagation(); // stop event from propagating to map features behind this one
         if (tracing) return; // no tooltips while tracing
-        if (d.is_user_generated) {
-            open_user_annotation_info_panel(get_annotation(current_map_state.user_annotations, d.uuid))
+        target_annotation = annotation;
+        if (annotation.is_user_generated) {
+            open_user_annotation_info_panel(annotation)
         } else {
-            open_annotation_info_panel(get_annotation(current_map_state.annotations, d.uuid))
+            open_annotation_info_panel(annotation)
         }
     }
 
