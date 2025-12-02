@@ -158,9 +158,9 @@ svg.call(zoom);
 
 // Image setup
 g.append('image')
-    .attr('href', config.image_url)
-    .attr('width', config.image_width)
-    .attr('height', config.image_height);
+    .attr('href', modes[current_mode].image_url)
+    .attr('width', modes[current_mode].image_width)
+    .attr('height', modes[current_mode].image_height);
 
 // Tooltip functions
 const show_tooltip = (area, event) => {
@@ -216,7 +216,7 @@ const close_info_panel = () => {
 };
 
 // Area rendering - sort by z_order and render in order
-const sorted_areas = [...config.areas].sort((a, b) => {
+const sorted_areas = [...modes[current_mode].areas].sort((a, b) => {
     const z_a = a.z_order ?? 0;
     const z_b = b.z_order ?? 0;
     return z_a - z_b;
@@ -433,12 +433,12 @@ const reset_view = () => {
 
 const fit_image_to_view = () => {
     const scale = Math.min(
-        state.width / config.image_width, 
-        state.height / config.image_height
+        state.width / modes[current_mode].image_width, 
+        state.height / modes[current_mode].image_height
     ) * 0.9;
     
-    const x = (state.width - config.image_width * scale) / 2;
-    const y = (state.height - config.image_height * scale) / 2;
+    const x = (state.width - modes[current_mode].image_width * scale) / 2;
+    const y = (state.height - modes[current_mode].image_height * scale) / 2;
     
     const initial_transform = d3.zoomIdentity.translate(x, y).scale(scale);
     svg.call(zoom.transform, initial_transform);
