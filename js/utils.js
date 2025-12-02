@@ -14,30 +14,29 @@ function coordinate_string(coords) {
 }
 
 /**
- * Convert a polygon object to a compact JSON string.
+ * Convert a annotation object to a compact JSON string.
  *
- * @param {Object} polygon - Polygon data with properties:
+ * @param {Object} annotation - Annotation data with properties:
  *   `id`, `side`, `name`, `description`, and `coordinates`.
  * @returns {string} A pretty‑printed JSON string where the `coordinates`
  *   field is rendered as a single‑line array.
  */
-function polygon_json_string(polygon) {
-    // Generate a simplified version of the polygon with only the desired fields
+function json_string(annotation) {
+    // Generate a simplified version of the annotation with only the desired fields
     // using a placeholder for coordinates to prevent nested indentation.
-    const simplified_polygon = {
-        "id": polygon.id,
-        "side": polygon.side,
-        "name": polygon.name,
-        "description": polygon.description,
+    const simplified_annotation = {
+        "id": annotation.id,
+        "name": annotation.name,
+        "description": annotation.description,
         "coordinates": "COORDINATES"
     }
 
     // Convert to JSON string with 4-space indents
-    const json_string = JSON.stringify(simplified_polygon, null, 4)
+    const s = JSON.stringify(simplified_annotation, null, 4)
 
     // Replace the COORDINATES placeholder with a one-liner JSON string
-    const coordinate_string = JSON.stringify(polygon.coordinates).replace(/,/g, ', ')
-    return json_string.replace(/"COORDINATES"/, coordinate_string)
+    const coordinate_string = JSON.stringify(annotation.coordinates).replace(/,/g, ', ')
+    return s.replace(/"COORDINATES"/, coordinate_string)
 }
 
 /**
@@ -48,41 +47,49 @@ function textbox_value_or_placeholder(el) {
     return el.value || el.placeholder;
 }
 
-function get_polygon(id) {
-    // Find index of this polygon
-    const idx = current_map_state.polygons.findIndex(p => (p.id === id));
+function get_annotation(set, uuid) {
+    // Find array index where this uuid is located in set
+    const idx = set.findIndex(p => (p.uuid === uuid));
     if (idx == -1) {
-        // Not found - generate warning
-        console.warn('Polygon not found');
+        console.warn('Annotation not found');
         return;
     } else {
-        // Found - remove it
-        return current_map_state.polygons[idx]
-    }
-}
-
-function get_user_polygon(uuid) {
-    // Find index of this polygon
-    const idx = current_map_state.user_polygons.findIndex(p => (p.uuid === uuid));
-    if (idx == -1) {
-        // Not found - generate warning
-        console.warn('Polygon not found');
-        return;
-    } else {
-        // Found - remove it
-        return current_map_state.user_polygons[idx]
+        return set[idx]
     }
 }
 
 // ========================================
-//   Types
+//   Data Structures
 // ========================================
+
+class MapAnnotation {
+    constructor(id, name, description, coordinates, zorder, is_user_generated=false) {
+        this.uuid = globalThis.crypto.randomUUID();
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.coordinates = coordinates;
+        this.zorder = zorder;
+        this.is_user_generated = is_user_generated;
+    }
+
+    static from_object(obj) {
+        const zorder = (obj.zorder == null) ? 1 : Number(obj.zorder);
+        return new MapAnnotation(obj.id, obj.name, obj.description, obj.coordinates, zorder);
+    }
+}
 
 class MapState {
-    constructor(name, image_url, polygons = []) {
+    constructor(name, image_url, annotations = []) {
+        this.uuid = globalThis.crypto.randomUUID();
         this.name = name;
         this.image_url = image_url;
-        this.polygons = polygons;
-        this.user_polygons = [];
+        this.annotations = annotations;
+        this.user_annotations = [];
+    }
+
+    static from_object(obj) {
+        const annotations = obj.annotations.map(MapAnnotation.from_object)
+        return new MapState(obj.name, obj.image_url, annotations);
     }
 }

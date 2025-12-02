@@ -71,21 +71,21 @@
         </button>
     </div>
 
-    <!-- Polygon Info Panel -->
-    <div id="polygon-std-info-panel" class="polygon-info-panel">
+    <!-- Annotation Info Panel -->
+    <div id="annotation-std-info-panel" class="annotation-info-panel">
         <h2>
             <span>Feature Info</span>
         </h2>
         <label>ID</label>
-            <input type="text" id="polygon-id" readonly>
+            <input type="text" id="annotation-id" readonly>
         <label>Name</label>
-            <input type="text" id="polygon-name" readonly>
+            <input type="text" id="annotation-name" readonly>
         <label>Description</label>
-            <textarea type="text" id="polygon-description" readonly></textarea>
+            <textarea type="text" id="annotation-description" readonly></textarea>
     </div>
 
-    <!-- Polygon (User-Generated) Info Panel -->
-    <div id="polygon-user-info-panel" class="polygon-info-panel">
+    <!-- Annotation (User-Generated) Info Panel -->
+    <div id="annotation-user-info-panel" class="annotation-info-panel">
         <h2>
             <span>Feature Info</span>
             <span id="json-copy-icon" title="Copy JSON to Clipboard">
@@ -93,15 +93,15 @@
             </span>
         </h2>
         <label>ID</label>
-            <input type="text" id="user-polygon-id" placeholder="new-id">
+            <input type="text" id="user-annotation-id" placeholder="new-id">
         <label>Name</label>
-            <input type="text" id="user-polygon-name" placeholder="New Feature Name">
+            <input type="text" id="user-annotation-name" placeholder="New Feature Name">
         <label>Description</label>
-            <textarea id="user-polygon-description" class="long" placeholder="New feature description"></textarea>
+            <textarea id="user-annotation-description" class="long" placeholder="New feature description"></textarea>
         <label>JSON Data</label>
-            <textarea id="user-polygon-json" class="mono long" readonly></textarea>
+            <textarea id="user-annotation-json" class="mono long" readonly></textarea>
         <div class="modal-buttons">
-            <button class="danger" id="discard-polygon-btn">Discard</button>
+            <button class="danger" id="discard-annotation-btn">Discard</button>
         </div>
     </div>
 
@@ -114,16 +114,20 @@
     <div id="reset-modal" class="modal">
         <div id="reset-modal-content">
             <h2>Confirm Reset</h2>
-            <p style="margin-bottom: 20px; line-height: 1.6;">This will reset the view and delete all user-generated polygons. This action cannot be undone.</p>
+            <p style="margin-bottom: 20px; line-height: 1.6;">This will reset the view and delete all user-generated annotations. This action cannot be undone.</p>
             <div class="modal-buttons">
                 <button class="danger" id="confirm-reset-btn">Reset Everything</button>
                 <button class="secondary" id="cancel-reset-btn">Cancel</button>
             </div>
         </div>
     </div>
+    
+    <!-- Maps -->
+    <script src="maps/lower.js"></script>
+    <script src="maps/upper.js"></script>
+    <script src="maps/_index.js"></script>
 
-    <script src="js/map.js"></script>
-    <script src="js/utils.js"></script>
-    <script src="js/app.js"></script>
+    <script src="js/utils.js"></script>     <!-- pure functions and data structures -->
+    <script src="js/app.js"></script>       <!-- main web app code -->
 </body>
 </html>
