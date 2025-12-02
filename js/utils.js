@@ -48,29 +48,14 @@ function textbox_value_or_placeholder(el) {
     return el.value || el.placeholder;
 }
 
-function get_polygon(id) {
-    // Find index of this polygon
-    const idx = current_map_state.polygons.findIndex(p => (p.id === id));
+function get_annotation(set, uuid) {
+    // Find array index where this uuid is located in set
+    const idx = set.findIndex(p => (p.uuid === uuid));
     if (idx == -1) {
-        // Not found - generate warning
-        console.warn('Polygon not found');
+        console.warn('Annotation not found');
         return;
     } else {
-        // Found - remove it
-        return current_map_state.polygons[idx]
-    }
-}
-
-function get_user_polygon(uuid) {
-    // Find index of this polygon
-    const idx = current_map_state.user_polygons.findIndex(p => (p.uuid === uuid));
-    if (idx == -1) {
-        // Not found - generate warning
-        console.warn('Polygon not found');
-        return;
-    } else {
-        // Found - remove it
-        return current_map_state.user_polygons[idx]
+        return set[idx]
     }
 }
 
@@ -79,22 +64,25 @@ function get_user_polygon(uuid) {
 // ========================================
 
 class MapAnnotation {
-    constructor(id, name, description, coordinates) {
-        this.uuid = globalThis.crypto.randomUUID()
+    constructor(id, name, description, coordinates, zorder, is_user_generated=false) {
+        this.uuid = globalThis.crypto.randomUUID();
         this.id = id;
         this.name = name;
         this.description = description;
         this.coordinates = coordinates;
+        this.zorder = zorder;
+        this.is_user_generated = is_user_generated;
     }
 
     static from_object(obj) {
-        return new MapAnnotation(obj.id, obj.name, obj.description, obj.coordinates);
+        const zorder = (obj.zorder == null) ? 1 : Number(obj.zorder);
+        return new MapAnnotation(obj.id, obj.name, obj.description, obj.coordinates, zorder);
     }
 }
 
 class MapState {
     constructor(name, image_url, annotations = []) {
-        this.uuid = globalThis.crypto.randomUUID(),
+        this.uuid = globalThis.crypto.randomUUID();
         this.name = name;
         this.image_url = image_url;
         this.polygons = annotations;

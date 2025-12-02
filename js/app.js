@@ -107,33 +107,30 @@ function render_polygons() {
     const g_click = (event, d) => {
         event.stopPropagation(); // stop event from propagating to map features behind this one
         if (tracing) return; // no tooltips while tracing
-        if (d.isUserGenerated) {
-            target_polygon = get_user_polygon(d.uuid)
-            open_user_polygon_info_panel(target_polygon)
+        if (d.is_user_generated) {
+            open_user_polygon_info_panel(get_annotation(current_map_state.user_polygons, d.uuid))
         } else {
-            open_polygon_info_panel(get_polygon(d.id))
+            open_polygon_info_panel(get_annotation(current_map_state.polygons, d.uuid))
         }
     }
 
     // Mark user-generated polygons with a flag for styling
     const allFeatures = [
-        ...current_map_state.polygons.map(f => ({...f, isUserGenerated: false})),
-        ...current_map_state.user_polygons.map(f => ({...f, isUserGenerated: true}))
+        ...current_map_state.polygons,
+        ...current_map_state.user_polygons
     ];
 
-    // Draw SVG polygonsCreate polygon elements from features data using D3 data binding
+    // Draw SVG polygons from annotations data using D3 data binding
     g.selectAll('.polygon-area')
         .data(allFeatures)
         .enter()
         .append('polygon')
-        .attr('class', d => d.isUserGenerated ? 'polygon-area user-generated' : 'polygon-area')  // sets css class based on type flag
+        .attr('class', d => d.is_user_generated ? 'polygon-area user-generated' : 'polygon-area') // css class
         .attr('points', d => coordinate_string(d.coordinates))
         .on('mouseenter', g_mouseenter)
         .on('mousemove', g_mousemove)
         .on('mouseleave', g_mouseleave)
         .on('click', g_click);
-
-    // TODO consider splitting this to draw user-generated separately?
 }
 
 function handle_window_resize() {
@@ -344,21 +341,22 @@ function complete_polygon() {
         return;
     }
     
-    // Generate polygon and add it to the current user_polygon array
-    const new_polygon = {
-        "uuid": globalThis.crypto.randomUUID(), // used internally to locate entries for deletion
-        "id": "new-id",
-        "side": current_map_state.name,
-        "name": "New Feature Name",
-        "description": "New feature description",
-        "coordinates": current_tracing_points
-    }
-    current_map_state.user_polygons.push(new_polygon);
-    target_polygon = new_polygon;
+    // Generate new annotation
+    const id = "new-id";
+    const name = "New Feature Name";
+    const description = "New feature description";
+    const coordinates = current_tracing_points;
+    const zorder = 1;
+    const is_user_generated = true;
+    const new_annotation = new MapAnnotation(id, name, description, coordinates, zorder, is_user_generated)
+    
+    // Add it to the current user_polygon array and 
+    current_map_state.user_polygons.push(new_annotation);
+    target_polygon = new_annotation;
 
     // Update UI: exit tracing, open polygon info panel, re-render all polygons
     exit_tracing()
-    open_user_polygon_info_panel(new_polygon);
+    open_user_polygon_info_panel(new_annotation);
     render_polygons()
 }
 
